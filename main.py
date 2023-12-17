@@ -52,3 +52,13 @@ async def get_food(food_name: FoodEnum):
     if food_name == FoodEnum.fruits:
         return {food_name: food_name, "message": "you like sweet product"}
     return {food_name: food_name, "message": "you like dairy product"}
+
+
+@app.get("/users/{user_id}/items/{items_id}")
+async def list_items(user_id: int, item_id: int, q: str | None = None, s: bool = False):
+    res = {"user_id": user_id, "item_id": item_id}
+    if q:
+        res.update({"q": q})
+    if not s:
+        res.update({"s": s})
+    return res
