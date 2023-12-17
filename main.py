@@ -1,5 +1,6 @@
 from enum import Enum
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -62,3 +63,44 @@ async def list_items(user_id: int, item_id: int, q: str | None = None, s: bool =
     if not s:
         res.update({"s": s})
     return res
+
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+
+
+@app.post("/items")
+async def create_items(item: Item):
+    item_dict = item.dict()
+    if item.tax:
+        price_with_tax = item.tax + item.price
+        item_dict.update({"price_with_tax": price_with_tax})
+    return item_dict
+
+
+@app.put("/items/{items_id}")
+async def create_items(items_id: str, item: Item):
+    item_dict = item.dict()
+    if items_id:
+        item_dict.update({"items_id": items_id})
+    if item.tax:
+        price_with_tax = item.tax + item.price
+        item_dict.update({"price_with_tax": price_with_tax})
+    return item_dict
+
+
+@app.get("/items/{items_id}")
+async def read_items(items_id: str,
+                     q: str | None = Query(
+                         None,
+                         min_length=3,
+                         max_length=10,
+                         title="sample query string",
+                         alias="items-query", description="This is the sample query ")):
+    results = {"items": [{"item": "foo"}, {"items": "bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
